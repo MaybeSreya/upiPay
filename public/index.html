@@ -1,0 +1,116 @@
+<html>
+<head>
+  <title>UPI Pay.me by Soumo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://registry.npmmirror.com/vue/3.3.11/files/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <style>
+    body {
+      font-family: 'Fredoka One', cursive;
+    }
+    .floating-message {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .floating-message.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-gray-900">
+  <div class="flex flex-col items-center justify-center min-h-screen p-4" id="app">
+    <div class="w-full max-w-4xl p-16 bg-gray-800 rounded-lg shadow-lg mx-4">
+      <div class="mb-4">
+        <div class="flex justify-center mt-2">
+          <div class="cib--samsung-pay"></div>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-lg mb-2 text-white flex items-center">
+          Payment Details
+          <span class="material-symbols-light--verified-outline ml-2"></span>
+        </h2>
+        <div class="mb-4">
+          <input id="upiId" class="w-full p-3 border rounded-lg bg-white shadow-sm" placeholder="Enter your UPI Address *" type="text" required/>
+        </div>
+        <div class="mb-4">
+          <input id="amount" class="w-full p-3 border rounded-lg bg-white shadow-sm" placeholder="Enter Amount (Optional)" type="text"/>
+        </div>
+        <div class="mb-4">
+          <input id="name" class="w-full p-3 border rounded-lg bg-white shadow-sm" placeholder="Enter your name *" type="text" required/>
+        </div>
+        <div class="flex justify-center">
+          <button onclick="saveDetails()" class="bg-blue-600 text-white py-2 px-6 rounded-full shadow-md">
+            Save Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed bottom-4 w-full text-center text-gray-400 text-sm">
+    Copyright 2024 © Soumo All Rights Reserved.
+  </div>
+
+  <div id="floatingMessage" class="floating-message">Details Saved Successfully!</div>
+
+  <script>
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+         upiId: params.get('upiId') || '',
+         amount: params.get('amount') || '',
+         name: params.get('name') ? decodeURIComponent(params.get('name').replace(/\+/g, ' ')) : ''
+      };
+    }
+
+    const { createApp } = Vue;
+    createApp({
+      mounted() {
+         const params = getQueryParams();
+         document.getElementById('upiId').value = params.upiId;
+         document.getElementById('amount').value = params.amount;
+         document.getElementById('name').value = params.name;
+      }
+    }).mount('#app');
+
+    async function saveDetails() {
+      const upiId = document.getElementById('upiId').value;
+      const amount = document.getElementById('amount').value;
+      const name = document.getElementById('name').value;
+
+      const response = await fetch('/save-details', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ upiId, amount, name })
+      });
+
+      if (response.ok) {
+        showFloatingMessage();
+      } else {
+        console.error('Failed to save details');
+      }
+    }
+
+    function showFloatingMessage() {
+      const messageElement = document.getElementById('floatingMessage');
+      messageElement.classList.add('show');
+      setTimeout(() => {
+        messageElement.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
